@@ -1,6 +1,7 @@
 package com.sereneast.keysight.scheduler;
 
-import com.sereneast.keysight.config.properties.ApplicationProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.JobParametersInvalidException;
@@ -16,24 +17,36 @@ import org.springframework.stereotype.Component;
 @Component
 public class JobScheduler {
 
-    private final ApplicationProperties applicationProperties;
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobScheduler.class);
     private final JobLauncher jobLauncher;
-    private final Job job;
+    private final Job accountJob;
+//    private final Job addressJob;
 
     @Autowired
-    public JobScheduler(ApplicationProperties applicationProperties, JobLauncher jobLauncher,@Qualifier("accountBatchJob") Job job) {
-        this.applicationProperties = applicationProperties;
+    public JobScheduler(JobLauncher jobLauncher,@Qualifier("accountBatchJob")Job accountJob) {
         this.jobLauncher = jobLauncher;
-        this.job = job;
+        this.accountJob = accountJob;
+//        this.addressJob = addressJob;
     }
 
-    @Scheduled(cron = "${cron.expression}")
+    @Scheduled(cron = "${keysight.job.account.cron}")
     public void runAccountJob(){
         try {
-            jobLauncher.run(job,new JobParametersBuilder().toJobParameters());
+            JobParametersBuilder parametersBuilder = new JobParametersBuilder();
+            parametersBuilder.addLong("time",System.currentTimeMillis());
+            jobLauncher.run(accountJob,parametersBuilder.toJobParameters());
         } catch (JobExecutionAlreadyRunningException | JobRestartException | JobInstanceAlreadyCompleteException | JobParametersInvalidException e) {
-            e.printStackTrace();
+           LOGGER.error("Error scheduling Account Job",e);
         }
     }
+
+/*    @Scheduled(cron = "${keysight.job.address.cron.expression}")
+    public void runAddressJob(){
+        try {
+            jobLauncher.run(addressJob,new JobParametersBuilder().toJobParameters());
+        } catch (JobExecutionAlreadyRunningException | JobRestartException | JobInstanceAlreadyCompleteException | JobParametersInvalidException e) {
+            LOGGER.error("Error scheduling Address Job",e);
+        }
+    }*/
 
 }

@@ -1,31 +1,39 @@
 package com.sereneast.keysight.config;
 
-import com.sereneast.keysight.batch.listener.JobCompletionNotificationListener;
+import com.sereneast.keysight.batch.AccountJdbcItemReader;
+import com.sereneast.keysight.batch.listener.AccountJobExecutionListener;
 import com.sereneast.keysight.batch.writer.AccountRestWriter;
+import com.sereneast.keysight.config.properties.AccountJobProperties;
+import com.sereneast.keysight.config.properties.AddressJobProperties;
+import com.sereneast.keysight.config.properties.ApplicationProperties;
 import com.sereneast.keysight.model.OrchestraObject;
-import com.sereneast.keysight.util.ResultSetToHashMapRowMapper;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
-import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 
 import javax.sql.DataSource;
-import java.util.Map;
 
 @SuppressWarnings("ALL")
 @Configuration
-@Import({DataSourceConfiguration.class})
+@EnableBatchProcessing
+@EnableScheduling
+@EnableConfigurationProperties({AccountJobProperties.class, AddressJobProperties.class, ApplicationProperties.class})
 public class AccountBatchJobConfiguration {
 
 	@Autowired
@@ -34,13 +42,14 @@ public class AccountBatchJobConfiguration {
 	@Autowired
 	public StepBuilderFactory stepBuilderFactory;
 
-	@ConfigurationProperties(prefix = "job.account")
+	@Autowired
+	private Environment environment;
+
 	@Bean
-	public JdbcCursorItemReader<Map<String,Object>> jdbcCursorItemReader(DataSource dataSource) {
-		JdbcCursorItemReader<Map<String,Object>> databaseReader= new JdbcCursorItemReader<Map<String,Object>>();
-		databaseReader.setDataSource(dataSource);
-		databaseReader.setRowMapper(new ResultSetToHashMapRowMapper());
-		return new JdbcCursorItemReader();
+	public AccountJdbcItemReader<OrchestraObject> accountJdbcItemReader(DataSource dataSource){
+		AccountJdbcItemReader<OrchestraObject> databaseReader= new AccountJdbcItemReader<OrchestraObject>();
+//		databaseReader.setDataSource(dataSource);
+		return databaseReader;
 	}
 
 	@Bean
@@ -49,30 +58,43 @@ public class AccountBatchJobConfiguration {
 	}
 
 	@Bean
-	public JobExecutionListener listener() {
-		return new JobCompletionNotificationListener();
-	}
-
-	@Bean(name="accountBatchJob")
-	public Job buildJob(@Qualifier("oracleDbDataSource")DataSource dataSource) {
-		return jobBuilderFactory.get("ACCOUNTS_DB_TO_REST").incrementer(new RunIdIncrementer()).listener(listener())
-				.flow(buildStep(dataSource)).end().build();
+	public JobExecutionListener jobExecutionListener() {
+		return new AccountJobExecutionListener();
 	}
 
 	@Bean
-	public TaskExecutor buildTaskExecutor(){
-		SimpleAsyncTaskExecutor asyncTaskExecutor=new SimpleAsyncTaskExecutor("spring_batch");
-		asyncTaskExecutor.setConcurrencyLimit(5);
+	public TaskExecutor taskExecutor(){
+		SimpleAsyncTaskExecutor asyncTaskExecutor=new SimpleAsyncTaskExecutor();
+		asyncTaskExecutor.setConcurrencyLimit(2);
+//		SyncTaskExecutor asyncTaskExecutor = new SyncTaskExecutor();
 		return asyncTaskExecutor;
 	}
 
 	@Bean
-	public Step buildStep(DataSource dataSource) {
-		return stepBuilderFactory.get("Extract -> Transform -> Load").<Map<String,Object>, OrchestraObject> chunk(1000)
-				.reader(jdbcCursorItemReader(dataSource))
+	public Step accountBatchJobStep(AccountJdbcItemReader accountJdbcItemReader,AccountRestWriter accountRestWriter,TaskExecutor taskExecutor) {
+		return stepBuilderFactory.get("accountBatchJobStep").<OrchestraObject, OrchestraObject>chunk(Integer.valueOf(environment.getProperty("keysight.job.account.chunkSize")))
+				.reader(accountJdbcItemReader)
 				.processor(null)
-				.writer(accountRestWriter())
-				.taskExecutor(buildTaskExecutor()).build();
+				.writer(accountRestWriter)
+				.taskExecutor(taskExecutor).build();
+	}
+
+	@Bean
+	public Job accountBatchJob(@Qualifier("accountBatchJobStep")Step accountBatchJobStep, JobExecutionListener jobExecutionListener){
+		return jobBuilderFactory.get("accountBatchJob")
+				.incrementer(new RunIdIncrementer())
+				.listener(jobExecutionListener)
+				.flow(accountBatchJobStep).end().build();
+	}
+
+	@Bean
+	public TaskScheduler taskScheduler() {
+		return new ConcurrentTaskScheduler();
+	}
+
+	@Bean
+	public NamedParameterJdbcTemplate oracleDbNamedParameterJdbcTemplate(DataSource dataSource){
+		return new NamedParameterJdbcTemplate(dataSource);
 	}
 
 }

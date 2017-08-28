@@ -5,10 +5,12 @@ import org.springframework.util.StringUtils;
 
 @Component
 public class AccountLastPolledIdStore {
-    private String lastPolledId;
+    private String lastPolledId="";
+
+    private Integer lock=1;
 
     public String getLastPolledId() {
-        synchronized (lastPolledId) {
+        synchronized (lock) {
             return lastPolledId;
         }
     }
@@ -17,7 +19,7 @@ public class AccountLastPolledIdStore {
         if(StringUtils.isEmpty(idToUpdate)) {
             return;
         }
-        synchronized (lastPolledId) {
+        synchronized (lock) {
             if (idToUpdate.compareTo(lastPolledId) > 0)
                 lastPolledId = idToUpdate;
         }
