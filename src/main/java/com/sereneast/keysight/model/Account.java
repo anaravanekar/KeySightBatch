@@ -1,4 +1,4 @@
-package com.sereneast.keysight.repo.model;
+package com.sereneast.keysight.model;
 
 import java.util.List;
 

@@ -1,6 +1,6 @@
 package com.sereneast.keysight.rest.client;
 
-import com.sereneast.keysight.repo.model.Account;
+import com.sereneast.keysight.model.Account;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;

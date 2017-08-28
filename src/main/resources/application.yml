@@ -1,0 +1,40 @@
+# Application properties (Begin with prefix=keysight)
+keysight:
+    datasource:
+        oracle:
+            driver-class-name: com.mysql.jdbc.Driver
+            password: lalit
+            pool:
+                max-active: 50
+                max-idle: 20
+                max-wait: 20000
+                min-idle: 15
+            url: jdbc:mysql://localhost:3306/testsource
+            username: lalit
+    job:
+        account:
+            name: ACCOUNT_DB_TO_REST
+            reader:
+                  fetchSize: 10000
+
+            sourceQuery: SELECT * FROM account
+        address:
+            destQuery: SELECT * FROM account
+
+
+#Spring properties
+spring:
+    batch:
+        job:
+            enabled: false
+logging:
+    level:
+        com:
+            sereneast: 'DEGUB '
+        org:
+            hibernate:
+                SQL: DEBUG
+                type:
+                    descriptor:
+                        sql:
+                            BasicBinder: INFO
