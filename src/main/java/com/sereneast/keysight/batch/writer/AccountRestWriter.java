@@ -2,6 +2,7 @@ package com.sereneast.keysight.batch.writer;
 
 import com.sereneast.keysight.model.OrchestraObject;
 import com.sereneast.keysight.model.OrchestraObjectList;
+import com.sereneast.keysight.rest.client.InvokeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemWriter;
@@ -19,6 +20,9 @@ public class AccountRestWriter implements ItemWriter<com.sereneast.keysight.mode
     @Autowired
     private NamedParameterJdbcTemplate oracleDbNamedParameterJdbcTemplate;
 
+    @Autowired
+    private InvokeService invokeService;
+
     private static final String successUpdateQuery =
             "UPDATE mdm_account SET interface_status='success', execution_date=:executionDate"+
             " mdm_account_id=:mdmAccountId  where system_id=:systemId AND system_name=:systemName";
@@ -33,11 +37,15 @@ public class AccountRestWriter implements ItemWriter<com.sereneast.keysight.mode
          oracleDbNamedParameterJdbcTemplate.batchUpdate(successUpdateQuery, accountDataForBatchUpdateSuccess.toArray(new HashMap[successUpdateQuery.length()]));
 */
         List<LinkedHashMap<String,Object>> accountDataForBatchUpdateSuccess = new ArrayList<>();
-        //Call REST API here and update status to success in db
+
+        //use rows object for bult insert with rest api
         OrchestraObjectList rows = new OrchestraObjectList();
         rows.setRows((List<OrchestraObject>)accounts);
-        //use rows object for bult insert with rest api
+
+
+        //Call REST API here and update status to success in db
         for(OrchestraObject account: accounts){
+            invokeService.insertAccount(account,"localhost:8080","admin","admin",account.getContent().get("SystemId").getContent().toString(),account.getContent().get("SystemName").getContent().toString());
             LinkedHashMap<String,Object> batchParams = new LinkedHashMap<>();
             batchParams.put("systemId",account.getContent().get("SystemId").getContent());
             accountDataForBatchUpdateSuccess.add(batchParams);
