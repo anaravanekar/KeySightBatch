@@ -1,29 +1,27 @@
 package com.sereneast.keysight.config;
 
-import com.sereneast.keysight.batch.listener.AccountJobExecutionListener;
-import com.sereneast.keysight.batch.writer.AccountRestWriter;
+import com.sereneast.keysight.batch.listener.AddressJobExecutionListener;
+import com.sereneast.keysight.batch.listener.AddressStepExecutionListener;
+import com.sereneast.keysight.batch.reader.AddressJdbcItemReader;
+import com.sereneast.keysight.batch.writer.AddressRestWriter;
 import com.sereneast.keysight.model.OrchestraObject;
-import com.sereneast.keysight.util.ResultSetToOrachestraObjectRowMapper;
 import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
-import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 
 import javax.sql.DataSource;
 
-/*@SuppressWarnings("ALL")
+@SuppressWarnings("ALL")
 @Configuration
-@Import({DataSourceConfiguration.class})*/
 public class AddressBatchJobConfiguration {
 
     @Autowired
@@ -36,45 +34,50 @@ public class AddressBatchJobConfiguration {
     private Environment environment;
 
     @Bean
-    public JdbcCursorItemReader<OrchestraObject> jdbcCursorItemReader(DataSource dataSource) {
-        JdbcCursorItemReader<OrchestraObject> databaseReader= new JdbcCursorItemReader<OrchestraObject>();
-        databaseReader.setDataSource(dataSource);
-        databaseReader.setSql(environment.getProperty("keysight.queries.getPendingAccountAddresses"));
-        databaseReader.setFetchSize(Integer.valueOf(environment.getProperty("keysight.job.address.fetchSize")));
-        databaseReader.setRowMapper(new ResultSetToOrachestraObjectRowMapper());
-        return new JdbcCursorItemReader();
+    public AddressJdbcItemReader addressJdbcItemReader(DataSource dataSource){
+        AddressJdbcItemReader databaseReader= new AddressJdbcItemReader();
+        return databaseReader;
     }
 
     @Bean
-    public AccountRestWriter accountRestWriter() {
-        return new AccountRestWriter();
+    public AddressRestWriter addressRestWriter() {
+        return new AddressRestWriter();
     }
 
     @Bean
-    public JobExecutionListener listener() {
-        return new AccountJobExecutionListener();
-    }
-
-    @Bean(name="addressBatchJob")
-    @DependsOn("oracleDbDataSource")
-    public Job buildJob(@Qualifier("oracleDbDataSource")DataSource dataSource) {
-        return jobBuilderFactory.get(environment.getProperty("keysight.job.address.name")).incrementer(new RunIdIncrementer()).listener(listener())
-                .flow(buildStep(dataSource)).end().build();
+    public AddressJobExecutionListener addressJobExecutionListener() {
+        return new AddressJobExecutionListener();
     }
 
     @Bean
-    public TaskExecutor buildTaskExecutor(){
-        SimpleAsyncTaskExecutor asyncTaskExecutor=new SimpleAsyncTaskExecutor(environment.getProperty("keysight.job.address.name")+"_STEP");
+    public AddressStepExecutionListener addressStepExecutionListener(){
+        return new AddressStepExecutionListener();
+    }
+
+    @Bean("addressTaskExecutor")
+    public TaskExecutor addressTaskExecutor(){
+        SimpleAsyncTaskExecutor asyncTaskExecutor=new SimpleAsyncTaskExecutor();
         asyncTaskExecutor.setConcurrencyLimit(5);
+//		SyncTaskExecutor asyncTaskExecutor = new SyncTaskExecutor();
         return asyncTaskExecutor;
     }
 
     @Bean
-    public Step buildStep(DataSource dataSource) {
-        return stepBuilderFactory.get("Extract -> Transform -> Load").<OrchestraObject, OrchestraObject>chunk(Integer.valueOf(environment.getProperty("keysight.job.address.chunkSize")))
-                .reader(jdbcCursorItemReader(dataSource))
+    public Step addressBatchJobStep(AddressJdbcItemReader addressJdbcItemReader, AddressRestWriter addressRestWriter, @Qualifier("addressTaskExecutor") TaskExecutor addressTaskExecutor, AddressStepExecutionListener addressStepExecutionListener) {
+        return stepBuilderFactory.get("addressBatchJobStep").<OrchestraObject, OrchestraObject>chunk(Integer.valueOf(environment.getProperty("keysight.job.address.chunkSize")))
+                .reader(addressJdbcItemReader)
                 .processor(null)
-                .writer(accountRestWriter())
-                .taskExecutor(buildTaskExecutor()).build();
+                .writer(addressRestWriter)
+                .listener(addressStepExecutionListener)
+                .taskExecutor(addressTaskExecutor).build();
     }
+
+    @Bean
+    public Job addressBatchJob(@Qualifier("addressBatchJobStep")Step addressBatchJobStep, AddressJobExecutionListener addressJobExecutionListener){
+        return jobBuilderFactory.get("addressBatchJob")
+                .incrementer(new RunIdIncrementer())
+                .listener(addressJobExecutionListener)
+                .flow(addressBatchJobStep).end().build();
+    }
+
 }

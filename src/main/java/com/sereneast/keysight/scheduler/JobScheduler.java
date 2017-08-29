@@ -20,13 +20,13 @@ public class JobScheduler {
     private static final Logger LOGGER = LoggerFactory.getLogger(JobScheduler.class);
     private final JobLauncher jobLauncher;
     private final Job accountJob;
-//    private final Job addressJob;
+    private final Job addressJob;
 
     @Autowired
-    public JobScheduler(JobLauncher jobLauncher,@Qualifier("accountBatchJob")Job accountJob) {
+    public JobScheduler(JobLauncher jobLauncher,@Qualifier("accountBatchJob")Job accountJob,@Qualifier("addressBatchJob")Job addressJob) {
         this.jobLauncher = jobLauncher;
         this.accountJob = accountJob;
-//        this.addressJob = addressJob;
+        this.addressJob = addressJob;
     }
 
     @Scheduled(cron = "${keysight.job.account.cron}")
@@ -40,13 +40,14 @@ public class JobScheduler {
         }
     }
 
-/*    @Scheduled(cron = "${keysight.job.address.cron.expression}")
+    @Scheduled(cron = "${keysight.job.address.cron}")
     public void runAddressJob(){
         try {
-            jobLauncher.run(addressJob,new JobParametersBuilder().toJobParameters());
+            JobParametersBuilder parametersBuilder = new JobParametersBuilder();
+            parametersBuilder.addLong("time",System.currentTimeMillis());
+            jobLauncher.run(addressJob,parametersBuilder.toJobParameters());
         } catch (JobExecutionAlreadyRunningException | JobRestartException | JobInstanceAlreadyCompleteException | JobParametersInvalidException e) {
             LOGGER.error("Error scheduling Address Job",e);
         }
-    }*/
-
+    }
 }

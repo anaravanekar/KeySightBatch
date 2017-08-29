@@ -5,8 +5,9 @@ keysight:
             name: ACCOUNT_DB_TO_REST
             cron: 0/45 * * 1/1 * ?
             chunkSize: 100
-            fetchSize: 200
+            fetchSize: 1000
             batchSize: 10
+            writeIndividual: false
             mapping:
                  system_id: SystemId
                  system_name: SystemName
@@ -40,93 +41,94 @@ keysight:
                  profile_class: ProfileClass
         address:
             name: ADDRESS_DB_TO_REST
-            cron: 0 0/2 * 1/1 * ?
+            cron: 0/45 * * 1/1 * ?
             chunkSize: 100
-            fetchSize: 200
+            fetchSize: 1000
             batchSize: 10
+            writeIndividual: false
             mapping:
-                  MDMAccountId: MDM_ACCOUNT_ID
-                  SiteNumber: site_num
-                  SiteId: site_id
-                  SiteName: site_name
-                  SystemId: SYSTEM_ID
-                  SystemName: SYSTEM_NAME
-                  Status: status
-                  AddressLine1: addr_line_1
-                  AddressLine2: addr_line_2
-                  AddressLine3: addr_line_3
-                  AddressLine4: addr_line_4
-                  Address: address
-                  City: city
-                  County: county
-                  State: state
-                  Province: province
-                  PostalCode: postal_code
-                  Country: country
-                  Addressee: addressee
-                  KeysightSFAAddressId: ks_sfa_addr_id
-                  IdentifyingAddress: identifying_addr
-                  Reference: reference
-                  Translation: translation
-                  OperatingUnit: oper_unit
-                  RPLCheck: rpl_info_user
-                  NLSLanguage: nls_lang
-                  AddressLine1LocalLanguage: addr_loc_lang_line_1
-                  AddressLine2LocalLanguage: addr_loc_lang_line_2
-                  AddressLine3LocalLanguage: addr_loc_lang_line_3
-                  AddressLine4LocalLanguage: addr_loc_lang_line_4
-                  CityLocalLanguage: city_loc_lang
-                  StateLocalLanguage: state_loc_lang
-                  PostalLocalLanguage: postal_code_loc_lang
-                  ProvinceLocalLanguage: province_loc_lang
-                  CountyLocalLanguage: county_loc_lang
-                  CountryLocalLanguage: country_loc_lang
-                  SendAcknowledgement: send_acknldgmnt
-                  InvoiceCopies: invoice_cop_sup
-                  AccountSiteType: accnt_site_type
-                  ContextValue: context_value
-                  TaxablePerson: taxable_person
-                  IndustryClassification: industry_classification
-                  TaxCertificateDate: tax_cert_date
-                  BusinessNumber: business_num
-                  IndustrySubclassification: indust_sub_classification
-                  AddressSiteCategory: addr_site_ctg
-                  ATS: ats
-                  BusinessPurpose: purpose
-                  Location: loc
-                  BillToLocation: bill_to_loc
-                  PrimaryPurpose: primary_purpose
-                  RevenueRecognition: rev_recognition
-                  OrgSegment: org_segment
-                  SubSegment: sub_segment
-                  AccountClass: accnt_class
-                  Receivable: receivable
-                  Revenue: revenue
-                  PaymentTerms: pay_terms
-                  SalesPerson: sales_person
-                  OrderType: order_type
-                  PriceList: price_lst
-                  DemandClass: demand_class
-                  ReceiptMethods: receipt_method
-                  PrimaryPayment: primary_payment
-                  StartDate: start_dt
-                  EndDate: end_dt
-                  DefaultReportingCountryName: default_rpt_country
-                  DefaultReportingRegistrationNumber: default_reg_num
-                  TaxRegistrationActive: tax_reg_active
-                  RegimeCode: regime_cd
-                  Tax: tax
-                  TaxJurisdictionCode: tax_jurisdiction_cd
-                  TaxRegistrationNumber: tax_reg_num
-                  Source: source
-                  DefaultTaxRegistration: default_tax_reg
-                  EfectiveFrom: eff_from_dt
-                  EffectiveTo: eff_to_dt
-                  RoundingRule: rounding_rule
+                MDM_ACCOUNT_ID: MDMAccountId
+                site_num: SiteNumber
+                site_id: SiteId
+                site_name: SiteName
+                SYSTEM_ID: SystemId
+                SYSTEM_NAME: SystemName
+                status: Status
+                addr_line_1: AddressLine1
+                addr_line_2: AddressLine2
+                addr_line_3: AddressLine3
+                addr_line_4: AddressLine4
+                address: Address
+                city: City
+                county: County
+                state: State
+                province: Province
+                postal_code: PostalCode
+                country: Country
+                addressee: Addressee
+                ks_sfa_addr_id: KeysightSFAAddressId
+                identifying_addr: IdentifyingAddress
+                reference: Reference
+                translation: Translation
+                oper_unit: OperatingUnit
+                rpl_info_user: RPLCheck
+                nls_lang: NLSLanguage
+                addr_loc_lang_line_1: AddressLine1LocalLanguage
+                addr_loc_lang_line_2: AddressLine2LocalLanguage
+                addr_loc_lang_line_3: AddressLine3LocalLanguage
+                addr_loc_lang_line_4: AddressLine4LocalLanguage
+                city_loc_lang: CityLocalLanguage
+                state_loc_lang: StateLocalLanguage
+                postal_code_loc_lang: PostalLocalLanguage
+                province_loc_lang: ProvinceLocalLanguage
+                county_loc_lang: CountyLocalLanguage
+                country_loc_lang: CountryLocalLanguage
+                send_acknldgmnt: SendAcknowledgement
+                invoice_cop_sup: InvoiceCopies
+                accnt_site_type: AccountSiteType
+                context_value: ContextValue
+                taxable_person: TaxablePerson
+                industry_classification: IndustryClassification
+                tax_cert_date: TaxCertificateDate
+                business_num: BusinessNumber
+                indust_sub_classification: IndustrySubclassification
+                addr_site_ctg: AddressSiteCategory
+                ats: ATS
+                purpose: BusinessPurpose
+                loc: Location
+                bill_to_loc: BillToLocation
+                primary_purpose: PrimaryPurpose
+                rev_recognition: RevenueRecognition
+                org_segment: OrgSegment
+                sub_segment: SubSegment
+                accnt_class: AccountClass
+                receivable: Receivable
+                revenue: Revenue
+                pay_terms: PaymentTerms
+                sales_person: SalesPerson
+                order_type: OrderType
+                price_lst: PriceList
+                demand_class: DemandClass
+                receipt_method: ReceiptMethods
+                primary_payment: PrimaryPayment
+                start_dt: StartDate
+                end_dt: EndDate
+                default_rpt_country: DefaultReportingCountryName
+                default_reg_num: DefaultReportingRegistrationNumber
+                tax_reg_active: TaxRegistrationActive
+                regime_cd: RegimeCode
+                tax: Tax
+                tax_jurisdiction_cd: TaxJurisdictionCode
+                tax_reg_num: TaxRegistrationNumber
+                source: Source
+                default_tax_reg: DefaultTaxRegistration
+                eff_from_dt: EfectiveFrom
+                eff_to_dt: EffectiveTo
+                rounding_rule: RoundingRule
     queries:
         getPendingAccounts: SELECT * FROM MDM_ACCOUNT WHERE INTERFACE_STATUS='Pending' AND SYSTEM_ID > ':systemId' ORDER BY SYSTEM_ID,SYSTEM_NAME
 
-        getPendingAccountAddresses: SELECT * FROM MDM_ACCOUNT_ADDRESS WHERE INTERFACE_STATUS='Pending' AND SYSTEM_ID > ':systemId' ORDER BY SYSTEM_ID,SYSTEM_NAME
+        getPendingAddresses: SELECT * FROM MDM_ACCOUNT_ADDRESS WHERE INTERFACE_STATUS='Pending' AND SYSTEM_ID > ':systemId' ORDER BY SYSTEM_ID,SYSTEM_NAME
 
 #Spring properties
 spring:

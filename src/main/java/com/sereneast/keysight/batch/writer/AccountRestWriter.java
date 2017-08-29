@@ -1,5 +1,6 @@
 package com.sereneast.keysight.batch.writer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sereneast.keysight.model.OrchestraObject;
 import com.sereneast.keysight.model.OrchestraObjectList;
 import com.sereneast.keysight.rest.client.InvokeService;
@@ -12,6 +13,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Random;
 
 public class AccountRestWriter implements ItemWriter<com.sereneast.keysight.model.OrchestraObject> {
 
@@ -42,16 +44,17 @@ public class AccountRestWriter implements ItemWriter<com.sereneast.keysight.mode
         OrchestraObjectList rows = new OrchestraObjectList();
         rows.setRows((List<OrchestraObject>)accounts);
 
+        Thread.sleep((new Random().nextInt(5)+1)*1000);
+        LOGGER.debug("WRITING ACCOUNTS"+new ObjectMapper().writeValueAsString(accounts));
 
         //Call REST API here and update status to success in db
         for(OrchestraObject account: accounts){
-            invokeService.insertAccount(account,"localhost:8080","admin","admin",account.getContent().get("SystemId").getContent().toString(),account.getContent().get("SystemName").getContent().toString());
+           // invokeService.insertAccount(account,"localhost:8080","admin","admin",account.getContent().get("SystemId").getContent().toString(),account.getContent().get("SystemName").getContent().toString());
             LinkedHashMap<String,Object> batchParams = new LinkedHashMap<>();
             batchParams.put("systemId",account.getContent().get("SystemId").getContent());
             accountDataForBatchUpdateSuccess.add(batchParams);
-            LOGGER.debug(Thread.currentThread().getName() + " Writing account " + account.getContent().get("SystemId").getContent());
+           LOGGER.debug(Thread.currentThread().getName() + " Writing account " + account.getContent().get("SystemId").getContent());
         }
-//        Thread.sleep(2000);
         LinkedHashMap<String,Object>[] map = new LinkedHashMap[accountDataForBatchUpdateSuccess.size()];
         oracleDbNamedParameterJdbcTemplate.batchUpdate("UPDATE mdm_account SET interface_status='success' where system_id=:systemId",accountDataForBatchUpdateSuccess.toArray(map));
     }

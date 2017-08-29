@@ -1,8 +1,9 @@
-package com.sereneast.keysight.batch;
+package com.sereneast.keysight.batch.reader;
 
 import com.sereneast.keysight.config.properties.AccountJobProperties;
 import com.sereneast.keysight.config.properties.ApplicationProperties;
 import com.sereneast.keysight.model.AccountLastPolledIdStore;
+import com.sereneast.keysight.model.OrchestraObject;
 import com.sereneast.keysight.util.ResultSetToOrachestraObjectRowMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,13 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class AccountJdbcItemReader<OrchestraObject> implements ItemReader<OrchestraObject> {
+public class AccountJdbcItemReader implements ItemReader<OrchestraObject> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountJdbcItemReader.class);
 
@@ -48,16 +48,23 @@ public class AccountJdbcItemReader<OrchestraObject> implements ItemReader<Orches
         synchronized(readerLock) {
             if (items == null || items.isEmpty()) {
                 String lastId = accountLastPolledIdStore.getLastPolledId();
-                if (StringUtils.isEmpty(lastId)) {
-                    lastId = "0";
-                    accountLastPolledIdStore.setLastPolledId("0");
-                }
+                LOGGER.debug("items is null. fetching records from db by lastId = {}",lastId);
                 ((JdbcTemplate) oracleDbNamedParameterJdbcTemplate.getJdbcOperations()).setMaxRows(accountJobProperties.getFetchSize());
-                List<OrchestraObject> resultList = oracleDbNamedParameterJdbcTemplate.query(applicationProperties.getQueries().get("getPendingAccounts").replaceAll(":systemId", lastId), (RowMapper<OrchestraObject>) resultSetToOrachestraObjectRowMapper);
-                items = new LinkedBlockingQueue<>(resultList);
-                LOGGER.debug(Thread.currentThread().getName() + " | Fetched Items -" + items.size());
+                List<OrchestraObject> resultList = oracleDbNamedParameterJdbcTemplate.query(applicationProperties.getQueries().get("getPendingAccounts").replaceAll(":systemId",lastId), (RowMapper<OrchestraObject>) resultSetToOrachestraObjectRowMapper);
+                LOGGER.debug(Thread.currentThread().getName() + " | Fetched Items from db count= " + resultList.size());
+                for(OrchestraObject account: resultList){
+                    LOGGER.debug(Thread.currentThread().getName() + " Fetched account from db " + account.getContent().get("SystemId").getContent());
+                }
+                if(resultList!=null && !resultList.isEmpty()) {
+                    lastId = resultList.get(resultList.size()-1).getContent().get("SystemId").getContent().toString();
+                    accountLastPolledIdStore.setLastPolledId(lastId);
+                    items = new LinkedBlockingQueue<>(resultList);
+                }
             }
-            return items.poll();
+            OrchestraObject objToReturn = items.poll();
+            if(objToReturn!=null)
+                LOGGER.debug(Thread.currentThread().getName() + " Reading account from reader " + objToReturn.getContent().get("SystemId").getContent());
+            return objToReturn;
         }
     }
 }

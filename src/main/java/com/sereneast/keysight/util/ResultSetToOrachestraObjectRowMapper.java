@@ -26,7 +26,9 @@ public class ResultSetToOrachestraObjectRowMapper implements RowMapper<Orchestra
         ResultSetMetaData metaData = rs.getMetaData();
         int count = metaData.getColumnCount();
         for (int i = 1; i <= count; i++) {
-            fields.put(accountJobProperties.getMapping().get(metaData.getColumnLabel(i).toLowerCase()), new OrchestraContent(rs.getObject(metaData.getColumnLabel(i))));
+            if(accountJobProperties.getMapping().containsKey(metaData.getColumnLabel(i).toLowerCase())){
+                fields.put(accountJobProperties.getMapping().get(metaData.getColumnLabel(i).toLowerCase()), new OrchestraContent(rs.getObject(metaData.getColumnLabel(i))));
+            }
         }
         orchestraObject.setContent(fields);
         return orchestraObject;

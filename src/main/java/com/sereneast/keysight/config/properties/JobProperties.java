@@ -7,6 +7,7 @@ public class JobProperties {
     private Integer chunksize;
     private Integer fetchSize;
     private Integer batchSize;
+    private Boolean writeIndividual;
     private Map<String,String> mapping;
 
     public String getName() {
@@ -47,5 +48,13 @@ public class JobProperties {
 
     public void setMapping(Map<String, String> mapping) {
         this.mapping = mapping;
+    }
+
+    public Boolean getWriteIndividual() {
+        return writeIndividual;
+    }
+
+    public void setWriteIndividual(Boolean writeIndividual) {
+        this.writeIndividual = writeIndividual;
     }
 }
