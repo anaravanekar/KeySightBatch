@@ -3,11 +3,12 @@ package com.sereneast.keysight.config.properties;
 import java.util.Map;
 
 public class JobProperties {
+    private Boolean enabled=false;
     private String name;
     private Integer chunksize;
     private Integer fetchSize;
     private Integer batchSize;
-    private Boolean writeIndividual;
+    private Boolean writeIndividual=false;
     private Map<String,String> mapping;
 
     public String getName() {
@@ -56,5 +57,13 @@ public class JobProperties {
 
     public void setWriteIndividual(Boolean writeIndividual) {
         this.writeIndividual = writeIndividual;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 }

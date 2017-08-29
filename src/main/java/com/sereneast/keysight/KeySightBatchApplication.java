@@ -1,18 +1,13 @@
 package com.sereneast.keysight;
 
-import com.sereneast.keysight.config.properties.ApplicationProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import javax.annotation.Resource;
 
 @SpringBootApplication
 public class KeySightBatchApplication {
 
-	@Resource
-	private ApplicationProperties applicationProperties;
-
-	public static void main(String[] args) {
+	public static void main(String[] args) throws JsonProcessingException {
 		SpringApplication.run(KeySightBatchApplication.class, args);
 	}
 }

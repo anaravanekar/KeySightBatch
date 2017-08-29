@@ -1,5 +1,7 @@
 package com.sereneast.keysight.scheduler;
 
+import com.sereneast.keysight.config.properties.AccountJobProperties;
+import com.sereneast.keysight.config.properties.AddressJobProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -23,6 +25,12 @@ public class JobScheduler {
     private final Job addressJob;
 
     @Autowired
+    private AccountJobProperties accountJobProperties;
+
+    @Autowired
+    private AddressJobProperties addressJobProperties;
+
+    @Autowired
     public JobScheduler(JobLauncher jobLauncher,@Qualifier("accountBatchJob")Job accountJob,@Qualifier("addressBatchJob")Job addressJob) {
         this.jobLauncher = jobLauncher;
         this.accountJob = accountJob;
@@ -32,9 +40,11 @@ public class JobScheduler {
     @Scheduled(cron = "${keysight.job.account.cron}")
     public void runAccountJob(){
         try {
-            JobParametersBuilder parametersBuilder = new JobParametersBuilder();
-            parametersBuilder.addLong("time",System.currentTimeMillis());
-            jobLauncher.run(accountJob,parametersBuilder.toJobParameters());
+            if(accountJobProperties.getEnabled()) {
+                JobParametersBuilder parametersBuilder = new JobParametersBuilder();
+                parametersBuilder.addLong("time", System.currentTimeMillis());
+                jobLauncher.run(accountJob, parametersBuilder.toJobParameters());
+            }
         } catch (JobExecutionAlreadyRunningException | JobRestartException | JobInstanceAlreadyCompleteException | JobParametersInvalidException e) {
            LOGGER.error("Error scheduling Account Job",e);
         }
@@ -43,9 +53,11 @@ public class JobScheduler {
     @Scheduled(cron = "${keysight.job.address.cron}")
     public void runAddressJob(){
         try {
-            JobParametersBuilder parametersBuilder = new JobParametersBuilder();
-            parametersBuilder.addLong("time",System.currentTimeMillis());
-            jobLauncher.run(addressJob,parametersBuilder.toJobParameters());
+            if(addressJobProperties.getEnabled()) {
+                JobParametersBuilder parametersBuilder = new JobParametersBuilder();
+                parametersBuilder.addLong("time", System.currentTimeMillis());
+                jobLauncher.run(addressJob, parametersBuilder.toJobParameters());
+            }
         } catch (JobExecutionAlreadyRunningException | JobRestartException | JobInstanceAlreadyCompleteException | JobParametersInvalidException e) {
             LOGGER.error("Error scheduling Address Job",e);
         }

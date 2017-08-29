@@ -2,6 +2,7 @@
 keysight:
     job:
         account:
+            enabled: false
             name: ACCOUNT_DB_TO_REST
             cron: 0/45 * * 1/1 * ?
             chunkSize: 100
@@ -40,6 +41,7 @@ keysight:
                  ixia_classification: IXIAClassification
                  profile_class: ProfileClass
         address:
+            enabled: false
             name: ADDRESS_DB_TO_REST
             cron: 0/45 * * 1/1 * ?
             chunkSize: 100
