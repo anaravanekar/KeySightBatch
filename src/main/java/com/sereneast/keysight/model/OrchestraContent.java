@@ -1,7 +1,10 @@
 package com.sereneast.keysight.model;
 
 public class OrchestraContent {
-    Object content;
+    private Object content;
+
+    public OrchestraContent() {
+    }
 
     public OrchestraContent(Object content) {
         this.content = content;

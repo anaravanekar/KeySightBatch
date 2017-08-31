@@ -3,7 +3,7 @@ package com.sereneast.keysight.model;
 import java.util.List;
 
 public class OrchestraObjectList {
-    List<OrchestraObject> rows;
+    private List<OrchestraObject> rows;
 
     public List<OrchestraObject> getRows() {
         return rows;

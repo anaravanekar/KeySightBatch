@@ -1,5 +1,13 @@
 # Application properties (Begin with prefix=keysight)
 keysight:
+    orchestraRest:
+        username: admin
+        password: admin
+        ssl: false
+        host: 10.10.10.90
+        port: 8080
+        baseURI: /ebx-dataservices/rest/data/
+        version: v1
     job:
         account:
             enabled: false
