@@ -1,7 +1,5 @@
 package com.sereneast.keysight.model;
 
-import com.sereneast.keysight.model.OrchestraContent;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -11,11 +9,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@JsonIgnoreProperties(value = { "childObjects" })
+@JsonIgnoreProperties(value = { "childObjects","id" })
 public class OrchestraObject {
     private Map<String,OrchestraContent> content;
 
     List<OrchestraObject> childObjects;
+
+    private Integer id;
 
     public Map<String, OrchestraContent> getContent() {
         return content;

@@ -34,11 +34,13 @@ public class AccountRestWriter implements ItemWriter<com.sereneast.keysight.mode
             "UPDATE mdm_account SET interface_status='success',"+
                     " mdm_account_id=:mdmAccountId  where system_id=:systemId";
 
+    private static final String SUCCESS_QUERY_ADDRESS =
+            "UPDATE mdm_account_address SET "+
+                    " mdm_account_id=:mdmAccountId  where system_id=:systemId";
+
     private static final String FAILED_QUERY =
             "UPDATE mdm_account SET interface_status='failed'"+
                     " where system_id=:systemId";
-
-    private static final String errorUpdateQuery = "";
 
     @SuppressWarnings("unchecked")
     @Override
@@ -75,6 +77,7 @@ public class AccountRestWriter implements ItemWriter<com.sereneast.keysight.mode
             }
             LinkedHashMap<String,Object>[] map = new LinkedHashMap[accountDataForBatchUpdateSuccess.size()];
             oracleDbNamedParameterJdbcTemplate.batchUpdate(SUCCESS_QUERY,accountDataForBatchUpdateSuccess.toArray(map));
+            oracleDbNamedParameterJdbcTemplate.batchUpdate(SUCCESS_QUERY_ADDRESS,accountDataForBatchUpdateSuccess.toArray(map));
         }else{
             LinkedHashMap<String,Object>[] map = new LinkedHashMap[accountDataForBatchUpdateSuccess.size()];
             oracleDbNamedParameterJdbcTemplate.batchUpdate(FAILED_QUERY,accountDataForBatchUpdateSuccess.toArray(map));
